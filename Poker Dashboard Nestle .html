@@ -1,0 +1,449 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="theme-color" content="#063d20">
+<title>Poker Board</title>
+<style>
+:root{
+  --red:#c8102e;
+  --black:#16181d;
+  --gold:#d4af37;
+  --cw:min(17vw, 26vh, 190px);
+  --ui:"Segoe UI", system-ui, -apple-system, Roboto, "Helvetica Neue", Arial, sans-serif;
+  --serif:Georgia, "Times New Roman", serif;
+}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;height:100%}
+body{
+  font-family:var(--ui);
+  color:#fff;
+  background:#04140b;
+  display:flex;flex-direction:column;
+  overflow-x:hidden;
+}
+
+/* ---------- Top bar ---------- */
+.topbar{
+  display:flex;align-items:center;justify-content:space-between;
+  padding:12px 22px;gap:12px;
+  background:linear-gradient(#0b0f0d,#07100b);
+  border-bottom:1px solid rgba(212,175,55,.25);
+}
+.brand{font-weight:600;letter-spacing:.18em;text-transform:uppercase;font-size:14px;color:var(--gold)}
+.meta{display:flex;gap:18px;font-size:15px;color:#cfd8d3}
+.meta b{color:#fff;font-weight:600}
+.stage{
+  padding:4px 12px;border-radius:999px;
+  background:rgba(212,175,55,.15);color:var(--gold);
+  font-weight:600;letter-spacing:.08em;text-transform:uppercase;font-size:13px;
+}
+
+/* ---------- Table ---------- */
+.table-wrap{flex:1;display:flex;align-items:center;justify-content:center;padding:18px}
+.table{
+  width:100%;max-width:1300px;
+  border-radius:200px;
+  padding:clamp(20px,4vw,48px) clamp(16px,4vw,60px);
+  background:
+    radial-gradient(ellipse at 50% 40%, #1a8a52 0%, #0f6a3c 45%, #08502b 80%, #063f22 100%);
+  border:clamp(8px,1.4vw,16px) solid #3a2415;
+  box-shadow:
+    0 0 0 3px #5a3a22,
+    0 0 0 5px rgba(0,0,0,.6),
+    inset 0 0 60px rgba(0,0,0,.55),
+    0 20px 60px rgba(0,0,0,.6);
+  display:flex;flex-direction:column;align-items:center;gap:clamp(14px,2.5vw,28px);
+}
+
+/* ---------- Positions ---------- */
+.positions{display:flex;flex-wrap:wrap;justify-content:center;gap:clamp(8px,1.5vw,18px)}
+.pos{
+  display:flex;align-items:center;gap:10px;
+  background:rgba(0,0,0,.28);
+  border:1px solid rgba(255,255,255,.12);
+  padding:6px 16px 6px 6px;border-radius:999px;
+  font-size:clamp(14px,1.8vw,22px);
+}
+.pos .name{font-weight:600}
+.pos .label{font-size:.65em;opacity:.7;text-transform:uppercase;letter-spacing:.08em;margin-right:2px}
+.chip{
+  width:clamp(28px,3vw,40px);height:clamp(28px,3vw,40px);border-radius:50%;
+  display:grid;place-items:center;
+  font-weight:800;font-size:clamp(10px,1.1vw,14px);
+  border:3px dashed rgba(255,255,255,.75);
+  box-shadow:0 2px 6px rgba(0,0,0,.5), inset 0 0 0 3px rgba(0,0,0,.12);
+}
+.chip.d{background:#f4f1e8;color:#111;border-color:#c9c3b3}
+.chip.sb{background:#1f5fbf}
+.chip.bb{background:#c8a12a;color:#1a1a1a}
+.chip.act{background:#c8102e}
+
+/* ---------- Board ---------- */
+.board{display:flex;gap:clamp(8px,1.6vw,22px);justify-content:center;align-items:flex-end}
+.group{display:flex;flex-direction:column;align-items:center;gap:8px}
+.group .cards{display:flex;gap:clamp(8px,1.6vw,22px)}
+.group-label{
+  font-size:clamp(11px,1.1vw,14px);letter-spacing:.2em;text-transform:uppercase;
+  color:rgba(255,255,255,.55);font-weight:600;
+}
+.divider{width:1px;align-self:stretch;margin:22px clamp(2px,.6vw,8px) 0;background:rgba(255,255,255,.12)}
+
+.slot{
+  width:var(--cw);aspect-ratio:5/7;
+  border-radius:calc(var(--cw)*.075);
+  border:2px dashed rgba(255,255,255,.22);
+  background:rgba(0,0,0,.12);
+  position:relative;
+}
+.card{
+  position:absolute;inset:-2px;
+  border-radius:calc(var(--cw)*.075);
+  background:linear-gradient(150deg,#ffffff 0%,#faf8f2 60%,#efebe1 100%);
+  box-shadow:0 10px 24px rgba(0,0,0,.45), 0 2px 4px rgba(0,0,0,.3), inset 0 0 0 1px rgba(0,0,0,.08);
+  animation:deal .35s cubic-bezier(.2,.9,.3,1.2);
+  overflow:hidden;
+}
+.card.red{color:var(--red)}
+.card.black{color:var(--black)}
+@keyframes deal{
+  from{transform:translateY(-40px) rotateY(80deg) scale(.9);opacity:0}
+  to{transform:none;opacity:1}
+}
+.corner{
+  position:absolute;top:4.5%;left:6%;
+  display:flex;flex-direction:column;align-items:center;
+  font-family:var(--serif);font-weight:700;line-height:.9;
+}
+.corner .r{font-size:calc(var(--cw)*.19);letter-spacing:-.04em}
+.corner .s{font-size:calc(var(--cw)*.15);margin-top:2px}
+.corner.br{top:auto;left:auto;bottom:4.5%;right:6%;transform:rotate(180deg)}
+
+.pips{position:absolute;inset:14% 22%}
+.pip{
+  position:absolute;transform:translate(-50%,-50%);
+  font-size:calc(var(--cw)*.2);line-height:1;
+}
+.pip.flip{transform:translate(-50%,-50%) rotate(180deg)}
+.pip.ace{font-size:calc(var(--cw)*.55)}
+
+.face{
+  position:absolute;inset:15% 21%;
+  border:2px solid currentColor;border-radius:6px;
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+  background:repeating-linear-gradient(45deg,rgba(0,0,0,.025) 0 6px,transparent 6px 12px);
+}
+.card.red .face{background-color:rgba(200,16,46,.05)}
+.face .big{font-family:var(--serif);font-weight:700;font-size:calc(var(--cw)*.42);line-height:1}
+.face .fs{font-size:calc(var(--cw)*.2);line-height:1}
+
+/* ---------- Controls ---------- */
+.controls{
+  background:linear-gradient(#0a110d,#060b08);
+  border-top:1px solid rgba(212,175,55,.25);
+  padding:14px 18px calc(14px + env(safe-area-inset-bottom));
+  display:flex;flex-direction:column;gap:12px;align-items:center;
+}
+.row{display:flex;flex-wrap:wrap;gap:8px;justify-content:center}
+.btn{
+  font-family:var(--ui);font-size:18px;font-weight:600;
+  min-width:52px;height:52px;padding:0 16px;
+  border-radius:10px;border:1px solid rgba(255,255,255,.14);
+  background:#1b231f;color:#fff;cursor:pointer;
+  transition:transform .08s, background .15s, border-color .15s;
+}
+.btn:active{transform:scale(.95)}
+.btn:hover{background:#25302a}
+.btn.rank.sel{background:var(--gold);color:#111;border-color:var(--gold)}
+.btn.suit{font-size:30px;width:72px;background:#f6f3ea}
+.btn.suit.red{color:var(--red)}
+.btn.suit.black{color:var(--black)}
+.btn.suit:hover{background:#fff}
+.btn.suit:disabled{opacity:.3;cursor:not-allowed}
+.btn.primary{background:var(--gold);color:#111;border-color:var(--gold)}
+.btn.ghost{background:transparent}
+.hint{font-size:13px;color:#8fa198}
+
+.toast{
+  position:fixed;left:50%;top:80px;transform:translateX(-50%);
+  background:#c8102e;color:#fff;padding:10px 18px;border-radius:8px;
+  font-weight:600;opacity:0;pointer-events:none;transition:opacity .2s;z-index:50;
+}
+.toast.show{opacity:1}
+
+/* ---------- Setup modal ---------- */
+.modal{
+  position:fixed;inset:0;background:rgba(0,0,0,.7);
+  display:none;align-items:center;justify-content:center;z-index:40;padding:16px;
+}
+.modal.open{display:flex}
+.sheet{
+  width:100%;max-width:460px;background:#101814;
+  border:1px solid rgba(212,175,55,.35);border-radius:16px;padding:24px;
+  box-shadow:0 20px 60px rgba(0,0,0,.6);
+}
+.sheet h2{margin:0 0 4px;font-weight:600;color:var(--gold)}
+.sheet p{margin:0 0 16px;color:#9fb0a7;font-size:14px}
+.sheet label{display:block;font-size:13px;color:#cfd8d3;margin:12px 0 6px;text-transform:uppercase;letter-spacing:.08em}
+.sheet textarea,.sheet select{
+  width:100%;font-family:var(--ui);font-size:17px;color:#fff;
+  background:#0a100d;border:1px solid rgba(255,255,255,.18);border-radius:10px;padding:12px;
+}
+.sheet textarea{height:190px;resize:vertical}
+.sheet .row{justify-content:flex-end;margin-top:18px}
+
+/* hide controls for a clean display */
+body.clean .controls{display:none}
+
+@media (max-width:700px){
+  .meta{display:none}
+  .table{border-radius:60px}
+  .divider{display:none}
+  .btn{height:46px;min-width:44px;font-size:16px;padding:0 12px}
+  .btn.suit{width:60px;font-size:26px}
+}
+</style>
+</head>
+<body>
+
+<header class="topbar">
+  <div class="brand">♠ Poker Night</div>
+  <div class="meta">
+    <span>Hand <b id="handNo">1</b></span>
+    <span>Players <b id="playerCount">0</b></span>
+  </div>
+  <div class="stage" id="stage">Pre-flop</div>
+</header>
+
+<main class="table-wrap">
+  <section class="table">
+    <div class="positions" id="positions"></div>
+
+    <div class="board">
+      <div class="group">
+        <div class="cards">
+          <div class="slot" id="s0"></div>
+          <div class="slot" id="s1"></div>
+          <div class="slot" id="s2"></div>
+        </div>
+        <div class="group-label">Flop</div>
+      </div>
+      <div class="divider"></div>
+      <div class="group">
+        <div class="cards"><div class="slot" id="s3"></div></div>
+        <div class="group-label">Turn</div>
+      </div>
+      <div class="divider"></div>
+      <div class="group">
+        <div class="cards"><div class="slot" id="s4"></div></div>
+        <div class="group-label">River</div>
+      </div>
+    </div>
+  </section>
+</main>
+
+<footer class="controls">
+  <div class="row" id="ranks"></div>
+  <div class="row" id="suits"></div>
+  <div class="hint" id="hint">Tap a rank, then a suit</div>
+  <div class="row">
+    <button class="btn" onclick="undo()">↶ Undo</button>
+    <button class="btn" onclick="clearBoard()">Clear board</button>
+    <button class="btn primary" onclick="nextHand()">Next hand ▸</button>
+    <button class="btn ghost" onclick="openSetup()">⚙ Players</button>
+    <button class="btn ghost" onclick="toggleFullscreen()">⛶</button>
+  </div>
+</footer>
+
+<div class="toast" id="toast"></div>
+
+<div class="modal" id="setup">
+  <div class="sheet">
+    <h2>Table setup</h2>
+    <p>Enter players in clockwise seating order, one per line.</p>
+    <label for="playersInput">Players</label>
+    <textarea id="playersInput" placeholder="Diego&#10;Alex&#10;John&#10;Maria&#10;Peter" oninput="fillDealerSelect()"></textarea>
+    <label for="dealerSelect">First dealer</label>
+    <select id="dealerSelect"></select>
+    <div class="row">
+      <button class="btn ghost" onclick="closeSetup()">Cancel</button>
+      <button class="btn primary" onclick="saveSetup()">Start game</button>
+    </div>
+  </div>
+</div>
+
+<script>
+const RANKS = ["A","K","Q","J","10","9","8","7","6","5","4","3","2"];
+const SUITS = [
+  {s:"♠", c:"black"}, {s:"♥", c:"red"}, {s:"♦", c:"red"}, {s:"♣", c:"black"}
+];
+const PIPS = {
+  "2":[[50,8],[50,92]],
+  "3":[[50,8],[50,50],[50,92]],
+  "4":[[15,8],[85,8],[15,92],[85,92]],
+  "5":[[15,8],[85,8],[50,50],[15,92],[85,92]],
+  "6":[[15,8],[85,8],[15,50],[85,50],[15,92],[85,92]],
+  "7":[[15,8],[85,8],[50,29],[15,50],[85,50],[15,92],[85,92]],
+  "8":[[15,8],[85,8],[50,29],[15,50],[85,50],[50,71],[15,92],[85,92]],
+  "9":[[15,8],[85,8],[15,36],[85,36],[50,50],[15,64],[85,64],[15,92],[85,92]],
+  "10":[[15,8],[85,8],[50,22],[15,36],[85,36],[15,64],[85,64],[50,78],[15,92],[85,92]]
+};
+
+let state = JSON.parse(localStorage.getItem("pokerBoard") || "null") ||
+  { players:[], dealer:0, hand:1, cards:[] };
+let selRank = null;
+
+const $ = id => document.getElementById(id);
+const save = () => localStorage.setItem("pokerBoard", JSON.stringify(state));
+
+/* ---------- Build controls ---------- */
+RANKS.forEach(r => {
+  const b = document.createElement("button");
+  b.className = "btn rank"; b.textContent = r;
+  b.onclick = () => { selRank = (selRank === r ? null : r); renderControls(); };
+  $("ranks").appendChild(b);
+});
+SUITS.forEach(x => {
+  const b = document.createElement("button");
+  b.className = "btn suit " + x.c; b.textContent = x.s;
+  b.onclick = () => addCard(x);
+  $("suits").appendChild(b);
+});
+
+function renderControls(){
+  [...$("ranks").children].forEach(b => b.classList.toggle("sel", b.textContent === selRank));
+  [...$("suits").children].forEach((b,i) => {
+    b.disabled = !selRank || state.cards.some(c => c.r === selRank && c.s === SUITS[i].s);
+  });
+  const left = 5 - state.cards.length;
+  $("hint").textContent = left === 0 ? "Board complete — tap Next hand"
+    : selRank ? `Now tap a suit for ${selRank}` : "Tap a rank, then a suit";
+}
+
+/* ---------- Cards ---------- */
+function addCard(suit){
+  if (!selRank) return toast("Pick a rank first");
+  if (state.cards.length >= 5) return toast("Board is full");
+  if (state.cards.some(c => c.r === selRank && c.s === suit.s)) return toast("Card already on board");
+  state.cards.push({r:selRank, s:suit.s, c:suit.c});
+  selRank = null;
+  save(); render(true);
+}
+function undo(){ state.cards.pop(); save(); render(); }
+function clearBoard(){ state.cards = []; save(); render(); }
+
+function cardHTML(card){
+  let center;
+  if (card.r === "A") {
+    center = `<div class="pips"><span class="pip ace" style="left:50%;top:50%">${card.s}</span></div>`;
+  } else if (["J","Q","K"].includes(card.r)) {
+    center = `<div class="face"><div class="big">${card.r}</div><div class="fs">${card.s}</div></div>`;
+  } else {
+    center = `<div class="pips">` + PIPS[card.r].map(([x,y]) =>
+      `<span class="pip${y > 50 ? " flip" : ""}" style="left:${x}%;top:${y}%">${card.s}</span>`).join("") + `</div>`;
+  }
+  const corner = cls => `<div class="corner ${cls}"><span class="r">${card.r}</span><span class="s">${card.s}</span></div>`;
+  return `<div class="card ${card.c}">${corner("tl")}${center}${corner("br")}</div>`;
+}
+
+/* ---------- Positions ---------- */
+function positions(){
+  const p = state.players, n = p.length;
+  if (n < 2) return null;
+  const at = k => p[(state.dealer + k) % n];
+  if (n === 2) {
+    // Heads-up: dealer posts SB and acts first pre-flop
+    return { d:at(0), sb:at(0), bb:at(1), pre:at(0), post:at(1) };
+  }
+  return { d:at(0), sb:at(1), bb:at(2), pre:at(3 % n), post:at(1) };
+}
+
+function posPill(chipCls, chipTxt, label, name){
+  const el = document.createElement("div");
+  el.className = "pos";
+  el.innerHTML = `<span class="chip ${chipCls}">${chipTxt}</span><span class="label"></span><span class="name"></span>`;
+  el.querySelector(".label").textContent = label;
+  el.querySelector(".name").textContent = name;
+  return el;
+}
+
+/* ---------- Render ---------- */
+function render(animateLast){
+  for (let i = 0; i < 5; i++){
+    const slot = $("s"+i), card = state.cards[i];
+    const isNew = animateLast && i === state.cards.length - 1;
+    if (!card) slot.innerHTML = "";
+    else if (isNew || !slot.firstChild) slot.innerHTML = cardHTML(card);
+  }
+  const n = state.cards.length;
+  $("stage").textContent = n === 0 ? "Pre-flop" : n <= 3 ? "Flop" : n === 4 ? "Turn" : "River";
+  $("handNo").textContent = state.hand;
+  $("playerCount").textContent = state.players.length;
+
+  const box = $("positions"); box.innerHTML = "";
+  const pos = positions();
+  if (!pos) {
+    box.appendChild(posPill("d","D","","Tap ⚙ Players to set up the table"));
+  } else {
+    box.appendChild(posPill("d","D","Dealer",pos.d));
+    box.appendChild(posPill("sb","SB","Small",pos.sb));
+    box.appendChild(posPill("bb","BB","Big",pos.bb));
+    box.appendChild(posPill("act","▶","To act", n === 0 ? pos.pre : pos.post));
+  }
+  renderControls();
+}
+
+function nextHand(){
+  if (state.players.length) state.dealer = (state.dealer + 1) % state.players.length;
+  state.hand++; state.cards = []; selRank = null;
+  save(); render();
+}
+
+/* ---------- Setup ---------- */
+function openSetup(){
+  $("playersInput").value = state.players.join("\n");
+  fillDealerSelect();
+  $("dealerSelect").value = state.dealer;
+  $("setup").classList.add("open");
+}
+function closeSetup(){ $("setup").classList.remove("open"); }
+function readPlayers(){
+  return $("playersInput").value.split(/[\n,]/).map(s => s.trim()).filter(Boolean);
+}
+function fillDealerSelect(){
+  const sel = $("dealerSelect"), cur = sel.value;
+  sel.innerHTML = "";
+  readPlayers().forEach((p,i) => {
+    const o = document.createElement("option"); o.value = i; o.textContent = p; sel.appendChild(o);
+  });
+  if (cur && cur < sel.options.length) sel.value = cur;
+}
+function saveSetup(){
+  const players = readPlayers();
+  if (players.length < 2) return toast("Add at least 2 players");
+  state = { players, dealer: Number($("dealerSelect").value) || 0, hand:1, cards:[] };
+  save(); closeSetup(); render();
+}
+
+/* ---------- Misc ---------- */
+let toastTimer;
+function toast(msg){
+  const t = $("toast"); t.textContent = msg; t.classList.add("show");
+  clearTimeout(toastTimer); toastTimer = setTimeout(() => t.classList.remove("show"), 1600);
+}
+function toggleFullscreen(){
+  if (!document.fullscreenElement) document.documentElement.requestFullscreen?.();
+  else document.exitFullscreen?.();
+}
+document.addEventListener("keydown", e => {
+  if (e.key === "h" && !$("setup").classList.contains("open")) document.body.classList.toggle("clean");
+});
+
+render();
+if (state.players.length < 2) openSetup();
+</script>
+</body>
+</html>
